@@ -39,3 +39,38 @@ var client = io("http://localhost:3000", {
 client.on("msg", function(data) {
   console.log(data);
 });
+
+/** chat panel */
+
+var sendChatBtn = document.getElementById("chat-btn");
+
+var chatBox = document.getElementById("chat-messages");
+/** if in the chat panel page */
+
+if (chatBox) {
+  client.on("everyone", function(msgObj) {
+    var li = document.createElement("li");
+    var from = document.createElement("p");
+    var message = document.createElement("p");
+
+    from.innerHTML = msgObj.email;
+    message.innerHTML = msgObj.message;
+
+    li.appendChild(from);
+    li.appendChild(message);
+
+    chatBox.appendChild(li);
+  });
+}
+
+if (sendChatBtn) {
+  sendChatBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    var chatInput = document.getElementById("chat-input");
+    var msg = chatInput.value;
+    if (msg.length) {
+      client.emit("new-message", msg);
+      chatInput.value = "";
+    }
+  });
+}

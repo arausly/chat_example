@@ -97,14 +97,18 @@ const verifySocketConnection = async (socket, next) => {
     const foundUser = await User.findOne({ email: decoded.email });
     if (foundUser) {
       socket.decoded = decoded;
-      if (!foundUser.socketId) {
-        await User.updateOne({ email: decoded.email }, { socketId: socket.id });
-        next();
-      } else {
-        /** ensure each user have one socket connection */
-        socket.disconnect();
-        next(new Error("Authentication error"));
-      }
+      await User.updateOne({ email: decoded.email }, { socketId: socket.id });
+      next();
+      //   if (!foundUser.socketId) {
+
+      //   } else {
+      //     /** ensure each user has one socket connection *
+      //      * currently revoking new connections from the same user /
+      //     /***@TODO take cue from whatsApp where a user can specify what tab/device they would like establish socket with. */
+      //     // io.sockets.connected[socket.id].disconnect();
+      //     socket.disconnect();
+      //     next(new Error("Authentication error"));
+      //   }
     } else {
       /** email from token doesn't exist any more */
       socket.disconnect();
@@ -121,7 +125,12 @@ const verifySocketConnection = async (socket, next) => {
 io.use(verifySocketConnection).on("connection", socket => {
   socket.emit("msg", "Hi, there");
 
+  socket.on("new-message", data => {
+    io.emit("everyone", { email: socket.decoded.email, message: data });
+  });
+
   socket.on("disconnect", async () => {
+    console.log("disconnecting socket...", socket.id);
     await User.updateOne({ socketId: socket.id }, { socketId: "" });
   });
 });
