@@ -20,7 +20,7 @@ if (loginBtn) {
       .then(json => {
         if (json) {
           loginBtn.innerHTML = "submit";
-          localStorage.setItem("token", json.token);
+          localStorage.setItem("token", JSON.stringify(json.token));
           window.location.href = `${window.location.origin}`;
         }
       })
@@ -31,15 +31,21 @@ if (loginBtn) {
 }
 
 /** socket Io */
-var token = localStorage.getItem("token");
-var client = io("http://localhost:3000", {
-  query: { token }
-});
+var token;
+token = localStorage.getItem("token");
+if (token) {
+  token = JSON.parse(token);
+}
 
-client.on("msg", function(data) {
-  console.log(data);
-});
+if (!window.location.href.includes("login")) {
+  var client = io("http://localhost:3000", {
+    query: { token }
+  });
 
+  client.on("msg", function(data) {
+    console.log(data);
+  });
+}
 /** chat panel */
 
 var sendChatBtn = document.getElementById("chat-btn");

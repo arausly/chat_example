@@ -40,19 +40,19 @@ const isAuthenticated = (req, res, next) => {
 
 /** page routes */
 app.get("/", isAuthenticated, (req, res) => {
-  return res.sendFile(__dirname + "/home.html");
+  return res.render("home.pug");
 });
 
 app.get("/about", isAuthenticated, (req, res) => {
-  return res.sendFile(__dirname + "/about.html");
+  return res.render("about");
 });
 
 app.get("/chat", isAuthenticated, (req, res) => {
-  return res.sendFile(__dirname + "/chat.html");
+  return res.render("chat");
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile(__dirname + "/login.html");
+  res.render("login");
 });
 
 /**API endpoints */
@@ -92,7 +92,7 @@ function authenticate(email, res) {
 
 const verifySocketConnection = async (socket, next) => {
   const { query } = socket.handshake;
-  if (query && query.token) {
+  if (query && query.token !== "null") {
     const decoded = jwt.verify(query.token, secret);
     const foundUser = await User.findOne({ email: decoded.email });
     if (foundUser) {
@@ -124,6 +124,8 @@ const verifySocketConnection = async (socket, next) => {
 /** socket */
 io.use(verifySocketConnection).on("connection", socket => {
   socket.emit("msg", "Hi, there");
+
+  console.log(Object.keys(io.sockets.connected).length);
 
   socket.on("new-message", data => {
     io.emit("everyone", { email: socket.decoded.email, message: data });

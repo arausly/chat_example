@@ -1,0 +1,24 @@
+extends index
+
+block content
+
+ #app.container
+   .row.justify-content-center
+     .col-md-8
+       .card
+         .card-body
+           .row
+             .col-md-12
+               .card
+                 .card-header Chat panel
+                 .card-body
+                   ul#chat-messages
+           .row
+             .col-md-12
+               form(method='post')
+                 .form-group
+                   .input-group
+                     input#chat-input.form-control(type='text' placeholder='Enter new Chat' name='new')
+                     .input-group-append
+                       button#chat-btn.btn.btn-primary
+                        |  submit
