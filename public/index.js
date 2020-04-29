@@ -1,3 +1,21 @@
+/** worker script */
+if (typeof window.SharedWorker === "undefined") {
+  throw new Error("Your browser doesn't support shared workers");
+}
+
+var worker = new SharedWorker("worker.js");
+
+worker.port.start();
+
+worker.port.onmessage = function(event) {
+  console.log("[WORKER_MSG]", event);
+};
+
+worker.onerror = function(err) {
+  console.error(err.message);
+  worker.port.close();
+};
+
 var loginBtn = document.getElementsByClassName("login-btn")[0];
 
 if (loginBtn) {
@@ -38,13 +56,7 @@ if (token) {
 }
 
 if (!window.location.href.includes("login")) {
-  var client = io("http://localhost:3000", {
-    query: { token }
-  });
-
-  client.on("msg", function(data) {
-    console.log(data);
-  });
+  worker.port.postMessage(["start", token, window.location.origin]);
 }
 /** chat panel */
 
@@ -54,18 +66,24 @@ var chatBox = document.getElementById("chat-messages");
 /** if in the chat panel page */
 
 if (chatBox) {
-  client.on("everyone", function(msgObj) {
-    var li = document.createElement("li");
-    var from = document.createElement("p");
-    var message = document.createElement("p");
+  worker.port.addEventListener("message", function(event) {
+    if (event.data.includes("new-chat")) {
+      var data = event.data;
+      var newChat = data.split(",")[1];
+      var msgObj = JSON.parse(newChat);
 
-    from.innerHTML = msgObj.email;
-    message.innerHTML = msgObj.message;
+      var li = document.createElement("li");
+      var from = document.createElement("p");
+      var message = document.createElement("p");
 
-    li.appendChild(from);
-    li.appendChild(message);
+      from.innerHTML = msgObj.email;
+      message.innerHTML = msgObj.message;
 
-    chatBox.appendChild(li);
+      li.appendChild(from);
+      li.appendChild(message);
+
+      chatBox.appendChild(li);
+    }
   });
 }
 
@@ -75,7 +93,7 @@ if (sendChatBtn) {
     var chatInput = document.getElementById("chat-input");
     var msg = chatInput.value;
     if (msg.length) {
-      client.emit("new-message", msg);
+      worker.port.postMessage(["new-message", msg]);
       chatInput.value = "";
     }
   });
