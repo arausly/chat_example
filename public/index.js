@@ -91,7 +91,6 @@ $(".content").on("click", "#chat-btn", function() {
   var chatInput = document.getElementById("chat-input");
   var msg = chatInput.value;
   if (msg.length) {
-    console.log("[MESSAGE]", msg);
     worker.port.postMessage(["new-message", msg]);
     chatInput.value = "";
   }
@@ -103,111 +102,117 @@ $(".content").on("click", "#chat-btn", function() {
 
 var html = document.querySelector("html");
 
-var chatLink = document.getElementById("chat-link");
-var aboutLink = document.getElementById("about-link");
-var homeLink = document.getElementById("home-link");
+if (!window.location.href.includes("/login")) {
+  var chatLink = document.getElementById("chat-link");
+  var aboutLink = document.getElementById("about-link");
+  var homeLink = document.getElementById("home-link");
 
-function formatHTML(text) {
-  const contentBody = text.match(
-    /\<\s*div\s*(class="content")\>.*\<script\ssrc="https:\/\/code/gm
-  );
-  const content = contentBody[0]
-    .replace(`</div><script src="https://code`, "")
-    .replace(`<div class="content">`, "");
+  function formatHTML(text) {
+    const contentBody = text.match(
+      /\<\s*div\s*(class="content")\>.*\<script\ssrc="https:\/\/code/gm
+    );
+    const content = contentBody[0]
+      .replace(`</div><script src="https://code`, "")
+      .replace(`<div class="content">`, "");
 
-  return content;
-}
+    return content;
+  }
 
-function renderChatHTML() {
-  fetch("/chat", {
-    method: "GET",
-    headers: {
-      "Content-Type": "text/html"
-    }
-  })
-    .then(res => res.text())
-    .then(text => {
-      var chatContent = formatHTML(text);
-      content.innerHTML = chatContent;
+  function renderChatHTML() {
+    fetch("/chat", {
+      method: "GET",
+      headers: {
+        "Content-Type": "text/html"
+      }
     })
-    .catch(console.error);
-}
+      .then(res => res.text())
+      .then(text => {
+        var chatContent = formatHTML(text);
+        content.innerHTML = chatContent;
+      })
+      .catch(console.error);
+  }
 
-function renderAboutHTML() {
-  fetch("/about", {
-    method: "GET",
-    headers: {
-      "Content-Type": "text/html"
-    }
-  })
-    .then(res => res.text())
-    .then(text => {
-      var aboutContent = formatHTML(text);
-      content.innerHTML = aboutContent;
+  function renderAboutHTML() {
+    fetch("/about", {
+      method: "GET",
+      headers: {
+        "Content-Type": "text/html"
+      }
     })
-    .catch(console.error);
-}
+      .then(res => res.text())
+      .then(text => {
+        var aboutContent = formatHTML(text);
+        content.innerHTML = aboutContent;
+      })
+      .catch(console.error);
+  }
 
-function renderHomeHTML() {
-  fetch("/", {
-    method: "GET",
-    headers: {
-      "Content-Type": "text/html"
-    }
-  })
-    .then(res => res.text())
-    .then(text => {
-      var homeContent = formatHTML(text);
-      content.innerHTML = homeContent;
+  function renderHomeHTML() {
+    fetch("/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "text/html"
+      }
     })
-    .catch(console.error);
-}
+      .then(res => res.text())
+      .then(text => {
+        var homeContent = formatHTML(text);
+        content.innerHTML = homeContent;
+      })
+      .catch(console.error);
+  }
 
-const applicationState = {
-  home: true,
-  about: false,
-  chat: true
-};
+  const applicationState = {
+    home: true,
+    about: false,
+    chat: true
+  };
 
-history.replaceState({ chat: false, about: false, home: true }, null, "");
+  history.replaceState({ chat: false, about: false, home: true }, null, "");
 
-chatLink.addEventListener("click", function(e) {
-  history.pushState({ chat: true, about: false, home: false }, null, "chat");
-  renderChatHTML();
-});
+  chatLink.addEventListener("click", function(e) {
+    history.pushState({ chat: true, about: false, home: false }, null, "chat");
+    renderChatHTML();
+  });
 
-aboutLink.addEventListener("click", function(e) {
-  history.pushState({ chat: false, about: true, home: false }, null, "about");
-  renderAboutHTML();
-});
+  aboutLink.addEventListener("click", function(e) {
+    history.pushState({ chat: false, about: true, home: false }, null, "about");
+    renderAboutHTML();
+  });
 
-homeLink.addEventListener("click", function(e) {
-  history.pushState({ chat: false, about: false, home: true }, null, "");
-  renderHomeHTML();
-});
+  homeLink.addEventListener("click", function(e) {
+    history.pushState({ chat: false, about: false, home: true }, null, "");
+    renderHomeHTML();
+  });
 
-window.onpopstate = function(e) {
-  if (e.state) {
-    if (e.state.about) {
-      history.replaceState(
-        { chat: false, about: true, home: false },
-        null,
-        "about"
-      );
-      renderAboutHTML();
-    } else if (e.state.chat) {
-      history.replaceState(
-        { chat: true, about: false, home: false },
-        null,
-        "chat"
-      );
-      renderChatHTML();
+  window.onpopstate = function(e) {
+    if (e.state) {
+      if (e.state.about) {
+        history.replaceState(
+          { chat: false, about: true, home: false },
+          null,
+          "about"
+        );
+        renderAboutHTML();
+      } else if (e.state.chat) {
+        history.replaceState(
+          { chat: true, about: false, home: false },
+          null,
+          "chat"
+        );
+        renderChatHTML();
+      } else {
+        history.replaceState(
+          { chat: false, about: false, home: true },
+          null,
+          ""
+        );
+        renderHomeHTML();
+      }
     } else {
       history.replaceState({ chat: false, about: false, home: true }, null, "");
       renderHomeHTML();
     }
-  } else {
-    history.replaceState({ chat: false, about: false, home: true }, null, "");
-    renderHomeHTML();
-  }
-};
+  };
+}

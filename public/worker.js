@@ -27,8 +27,12 @@ self.addEventListener(
       }
 
       if (socketClient) {
+        var senderID;
         socketClient.on("everyone", function(msgObj) {
-          client.postMessage(["new-chat", JSON.stringify(msgObj)]);
+          if (msgObj.senderID !== senderID) {
+            client.postMessage(["new-chat", JSON.stringify(msgObj)]);
+            senderID = msg.senderID;
+          }
         });
 
         if (event.data.includes("new-message")) {

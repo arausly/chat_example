@@ -128,8 +128,12 @@ io.use(verifySocketConnection).on("connection", socket => {
   console.log(Object.keys(io.sockets.connected).length);
 
   socket.on("new-message", data => {
-    console.log(data);
-    io.emit("everyone", { email: socket.decoded.email, message: data });
+    const senderID = Math.floor(Math.random() * 10 + 1);
+    io.emit("everyone", {
+      email: socket.decoded.email,
+      message: data,
+      senderID
+    });
   });
 
   socket.on("disconnect", async () => {
