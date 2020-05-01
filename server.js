@@ -136,8 +136,33 @@ io.use(verifySocketConnection).on("connection", socket => {
     });
   });
 
+  User.find({})
+    .then(users => {
+      const formattedUsers = users.map(user => {
+        return {
+          online: user.socketId ? true : false,
+          username: user.email.split(".")[0]
+        };
+      });
+
+      io.emit("users", formattedUsers);
+    })
+    .catch(console.error);
+
   socket.on("disconnect", async () => {
     console.log("disconnecting socket...", socket.id);
     await User.updateOne({ socketId: socket.id }, { socketId: "" });
+    User.find({})
+      .then(users => {
+        const formattedUsers = users.map(user => {
+          return {
+            online: user.socketId ? true : false,
+            username: user.email.split(".")[0]
+          };
+        });
+
+        io.emit("users", formattedUsers);
+      })
+      .catch(console.error);
   });
 });

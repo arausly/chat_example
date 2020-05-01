@@ -85,6 +85,31 @@ worker.port.addEventListener("message", function(event) {
       .find("#chat-messages")
       .append(li);
   }
+
+  if (event.data.includes("all-users")) {
+    var data = event.data;
+    var usersArr = JSON.parse(data[1]);
+
+    $(".content")
+      .find("#chat-users")
+      .empty();
+
+    usersArr.forEach(function(user) {
+      var li = document.createElement("li");
+      var username = document.createElement("p");
+      var status = document.createElement("span");
+
+      username.innerHTML = user.username;
+      status.setAttribute("class", user.online ? "online" : "offline");
+
+      li.appendChild(username);
+      li.appendChild(status);
+
+      $(".content")
+        .find("#chat-users")
+        .append(li);
+    });
+  }
 });
 
 $(".content").on("click", "#chat-btn", function() {
